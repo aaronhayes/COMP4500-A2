@@ -1,0 +1,6 @@
+File 'test04-recursive-iterative.txt'
+Transformation cost of 'recursive' to 'iterative'
+Recursive algorithm gives 19
+Dynamic programming algorithm gives 19
+Transformed string = 'iterative'
+[Replace(i), Insert(t), Copy, Delete, Delete, Copy, Replace(a), Insert(t), Copy, Copy, Copy]

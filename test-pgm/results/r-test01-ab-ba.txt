@@ -1,0 +1,6 @@
+File 'test01-ab-ba.txt'
+Transformation cost of 'ab' to 'ba'
+Recursive algorithm gives 2
+Dynamic programming algorithm gives 2
+Transformed string = 'ba'
+[Swap]

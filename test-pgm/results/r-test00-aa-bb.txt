@@ -1,0 +1,6 @@
+File 'test00-aa-bb.txt'
+Transformation cost of 'aa' to 'bb'
+Recursive algorithm gives 6
+Dynamic programming algorithm gives 6
+Transformed string = 'bb'
+[Replace(b), Replace(b)]

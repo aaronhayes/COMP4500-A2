@@ -1,0 +1,6 @@
+File 'test03-aaaaa-aaaaaa.txt'
+Transformation cost of 'aaaaaaa' to 'aaaaaaaa'
+Recursive algorithm gives 9
+Dynamic programming algorithm gives 9
+Transformed string = 'aaaaaaaa'
+[Copy, Copy, Copy, Copy, Copy, Copy, Copy, Insert(a)]

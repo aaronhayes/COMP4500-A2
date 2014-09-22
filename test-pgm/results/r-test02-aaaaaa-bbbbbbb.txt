@@ -1,0 +1,6 @@
+File 'test02-aaaaaa-bbbbbbb.txt'
+Transformation cost of 'aaaaaaaaaa' to 'bbbbbbbbbb'
+Recursive algorithm gives 25
+Dynamic programming algorithm gives 25
+Transformed string = 'bbbbbbbbbb'
+[Insert(b), Insert(b), Insert(b), Insert(b), Insert(b), Insert(b), Insert(b), Insert(b), Insert(b), Insert(b), Kill]
