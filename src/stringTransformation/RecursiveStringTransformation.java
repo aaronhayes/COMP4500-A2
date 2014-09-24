@@ -1,7 +1,5 @@
 package stringTransformation;
 
-import com.sun.corba.se.impl.javax.rmi.CORBA.Util;
-
 import stringTransformation.TransElement.TransCode;
 
 public class RecursiveStringTransformation { 
