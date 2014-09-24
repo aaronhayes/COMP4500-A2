@@ -76,7 +76,7 @@ public class RecursiveStringTransformation {
      */
     private static int min(int ... numbers) {
         int min = Integer.MAX_VALUE;
-        for (int number: numbers) {
+        for (int number : numbers) {
             min = Math.min(min, number);
         }
         return min;
