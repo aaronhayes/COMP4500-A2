@@ -46,9 +46,7 @@ public class RecursiveStringTransformation {
         if (stringX.charAt(0) == stringY.charAt(0)) {
             // Copy Case
             copy = transformCost(stringX.substring(1), stringY.substring(1)) + TransCode.Copy.cost;
-        }
-        
-        if (stringX.charAt(0) != stringY.charAt(0)) {
+        } else {
             // Replace Case
             replace = transformCost(stringX.substring(1), stringY.substring(1)) + TransCode.Replace.cost;
         }
