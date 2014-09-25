@@ -23,7 +23,7 @@ public class DynamicStringTransformation {
     int[][] table;
     TransElement[][] trans;
     public int numberOfIterations;
-    private int iKill;
+    private int iKill;  // Location of Kill Transformation
     
     public int stringTransformation() {
         numberOfIterations = transformCost();
@@ -33,83 +33,114 @@ public class DynamicStringTransformation {
     /**
      * Calculate the Minimum Transformation Cost using a bottom-up
      *  dynamic approach. Runs in O(M * N) time.
+     *  Use i, j as index variables to both strings x, y respectively. 
+     *   i.e. table[i][j] is the cost of an operation to transform X.charAt(i)
+     *   into Y.charAt(j). The transformation type of that cost is trans[i][j].
+     *   This is used consistently throughout this file.
+     *       
      * @return minimum cost of string transformation.
      */
     private int transformCost() {
-        table = new int[x.length()+1][y.length()+1];
-        trans = new TransElement[x.length()+1][y.length()+1];
-        
-        // Initialise Tables
-        for(int i = 1; i <= x.length(); i++) {
-            table[i][0] = i * TransCode.Delete.cost;
-            trans[i][0] = new TransElement.DeleteElement();
-        }
-        for(int j = 1; j <= y.length(); j++) {
-            table[0][j] = j * TransCode.Insert.cost;
-            trans[0][j] = new TransElement.InsertElement(y.charAt(j - 1));
-        }
-        
+        initialiseArrays();
         
         // Fill in tables: by row, left to right and top to bottom.
+        // Note that i = j = 1 initially: index of chars must be -1 from i,j.
         for(int i = 1; i <= x.length(); i++) {
             for(int j = 1; j <= y.length(); j++) {
                 
-                int copy = Integer.MAX_VALUE; 
-                int replace = Integer.MAX_VALUE;
-                int swap = Integer.MAX_VALUE;
-
+                TransElement tran;
+                int minCost;
+                
+                // Consider either Copy or Replace Transformations
                 if (x.charAt(i - 1) == y.charAt(j - 1)) {
                     // Copy Case
-                    copy = table[i - 1][j - 1] + TransCode.Copy.cost;
+                    minCost = table[i - 1][j - 1] + TransCode.Copy.cost;
+                    tran = new TransElement.CopyElement();
                 } else {
                     // Replace Case
-                    replace = table[i - 1][j - 1] + TransCode.Replace.cost;
+                    minCost = table[i - 1][j - 1] + TransCode.Replace.cost;
+                    tran = new TransElement.ReplaceElement(y.charAt(j - 1));
                 }
                 
+                // Must consider Swap Transformation
                 if (i > 1 && j > 1 
                         && x.charAt(i - 1) == y.charAt(j - 2)
-                        && x.charAt(i - 2) == y.charAt(j - 1)) {
+                        && x.charAt(i - 2) == y.charAt(j - 1)
+                        && (table[i - 2][j - 2] + TransCode.Swap.cost 
+                                < minCost)) {
                     // Swap Case
-                    swap = table[i - 2][j - 2] + TransCode.Swap.cost;
+                    minCost = table[i - 2][j - 2] + TransCode.Swap.cost;
+                    tran = new TransElement.SwapElement();
                 }
                 
                 // Always Consider Delete, and Insert Cases
-                int delete = table[i - 1][j] + TransCode.Delete.cost;
-                int insert = table[i][j - 1] + TransCode.Insert.cost;
-                
-
-                table[i][j] = min(copy, replace, swap, delete, insert);
-                if (table[i][j] == copy) {
-                    trans[i][j] = new TransElement.CopyElement();
-                } else if (table[i][j] == replace) {
-                    trans[i][j] = new TransElement.ReplaceElement(y.charAt(j - 1));
-                } else if (table[i][j] == swap) {
-                    trans[i][j] = new TransElement.SwapElement();
-                } else if (table[i][j] == delete) {
-                    trans[i][j] = new TransElement.DeleteElement();
-                } else {
-                    trans[i][j] = new TransElement.InsertElement(y.charAt(j - 1));
+                if (table[i - 1][j] + TransCode.Delete.cost < minCost) {
+                    // Delete Case
+                    minCost = table[i - 1][j] + TransCode.Delete.cost;
+                    tran = new TransElement.DeleteElement();
                 }
+                if (table[i][j - 1] + TransCode.Insert.cost < minCost) {
+                    // Insert Case
+                    minCost = table[i][j - 1] + TransCode.Insert.cost;
+                    tran = new TransElement.InsertElement(y.charAt(j - 1));
+                }
+
+                // Set current element in Arrays to correct values
+                table[i][j] = minCost;
+                trans[i][j] = tran;
             }
         }
         
-        // Find location of any potential Kill Elements.
-        // Must be the last operation.
-        for (int i = 0; i < x.length() - 2; i++) {
-            if (table[i][y.length()] + TransCode.Kill.cost 
-                    < table[x.length()][y.length()]) {
-                table[x.length()][y.length()] = table[i][y.length()] 
-                        + TransCode.Kill.cost;
-                
-                trans[x.length()][y.length()] = new TransElement.KillElement();
-                iKill = i;
-            }
-        }
+        findKillTransformation();
         
         // Total cost is the last element in the 2D array 
         return table[x.length()][y.length()]; 
     }
     
+    /**
+     * Initialise the two arrays (table and trans).
+     * @ensure table/trans are initialised with the proper size
+     *      and contain costs/transformations for deleting/inserting chars in
+     *      strings x and y respectively. 
+     */
+    private void initialiseArrays() {
+        // Create arrays with correct size
+        table = new int[x.length() + 1][y.length() + 1];
+        trans = new TransElement[x.length() + 1][y.length() + 1];
+        
+        // Add initial values into arrays
+        // That is delete and insert each char of respective strings
+        for(int i = 1; i <= x.length(); i++) {
+            // Add cost/transformation to delete each char in the x string
+            table[i][0] = i * TransCode.Delete.cost;
+            trans[i][0] = new TransElement.DeleteElement();
+        }
+        
+        for(int j = 1; j <= y.length(); j++) {
+            // Add cost/transformation to insert each char in the y string
+            table[0][j] = j * TransCode.Insert.cost;
+            trans[0][j] = new TransElement.InsertElement(y.charAt(j - 1));
+        }
+    }
+    
+    /**
+     * Find the location of a potential kill element.
+     *  It must be the last operation, and after the y string has been
+     *      completely traversed. Hence j = y.length().
+     *  @ensure iKill to be the i location of the kill element if it exists.
+     */
+    private void findKillTransformation() {
+        for (int i = 0; i < x.length() - 2; i++) {
+            if (table[i][y.length()] + TransCode.Kill.cost 
+                    < table[x.length()][y.length()]) {
+                
+                table[x.length()][y.length()] = table[i][y.length()] 
+                        + TransCode.Kill.cost;
+                trans[x.length()][y.length()] = new TransElement.KillElement();
+                iKill = i;
+            }
+        }
+    }
     
     /**
      * @requires that the stringTransformation function has been called to 
@@ -163,18 +194,5 @@ public class DynamicStringTransformation {
         
         // Add current Element to Transformation List
         transList.add(trans[i][j]);
-    }
-    
-    /**
-     * Calculate the minimum value of a list of integers 
-     * @param numbers integers
-     * @return minimum of numbers
-     */
-    private static int min(int ... numbers) {
-        int min = Integer.MAX_VALUE;
-        for (int number : numbers) {
-            min = Math.min(min, number);
-        }
-        return min;
     }
 }
