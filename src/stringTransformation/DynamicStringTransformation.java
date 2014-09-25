@@ -31,24 +31,26 @@ public class DynamicStringTransformation {
     }
     
     /**
-     * 
-     * @return
+     * Calculate the Minimum Transformation Cost using a bottom-up
+     *  dynamic approach. Runs in O(M * N) time.
+     * @return minimum cost of string transformation.
      */
     private int transformCost() {
         table = new int[x.length()+1][y.length()+1];
         trans = new TransElement[x.length()+1][y.length()+1];
         
-        for(int i = 0; i <= x.length(); i++) {
+        // Initialise Tables
+        for(int i = 1; i <= x.length(); i++) {
             table[i][0] = i * TransCode.Delete.cost;
             trans[i][0] = new TransElement.DeleteElement();
         }
-        
-        for(int j = 1 ; j <= y.length(); j++) {
+        for(int j = 1; j <= y.length(); j++) {
             table[0][j] = j * TransCode.Insert.cost;
-            if (j < y.length())
-            trans[0][j] = new TransElement.InsertElement(y.charAt(j));
+            trans[0][j] = new TransElement.InsertElement(y.charAt(j - 1));
         }
         
+        
+        // Fill in tables: by row, left to right and top to bottom.
         for(int i = 1; i <= x.length(); i++) {
             for(int j = 1; j <= y.length(); j++) {
                 
@@ -91,15 +93,20 @@ public class DynamicStringTransformation {
             }
         }
         
-        
+        // Find location of any potential Kill Elements.
+        // Must be the last operation.
         for (int i = 0; i < x.length() - 2; i++) {
-            if (table[i][y.length()] + TransCode.Kill.cost < table[x.length()][y.length()]) {
-                table[x.length()][y.length()] = table[i][y.length()] + TransCode.Kill.cost;
+            if (table[i][y.length()] + TransCode.Kill.cost 
+                    < table[x.length()][y.length()]) {
+                table[x.length()][y.length()] = table[i][y.length()] 
+                        + TransCode.Kill.cost;
+                
                 trans[x.length()][y.length()] = new TransElement.KillElement();
                 iKill = i;
             }
         }
         
+        // Total cost is the last element in the 2D array 
         return table[x.length()][y.length()]; 
     }
     
@@ -112,42 +119,49 @@ public class DynamicStringTransformation {
      */
     public List<TransElement> getTransList() {
         List<TransElement> transList = new ArrayList<TransElement>();
-        getSequence(transList, x.length(), y.length());
+        
+        // No need to repeatedly build the transformation list, it won't change
+        if (transList.isEmpty()) {
+            getSequence(transList, x.length(), y.length());
+        }
+        
         return transList;
     }
     
     /**
-     * 
-     * @param transList
-     * @param i
-     * @param j
+     * Recursively build the transformation list to solve the 
+     *  transformation with the minimal cost.
+     * @param transList List of Transformation to be built
+     * @param i array index
+     * @param j array index
      */
     private void getSequence(List<TransElement> transList, int i, int j) {
-        int iNext, jNext;
-        if (i <= 0 && j <= 0) return;
-        if (i < 0 || j < 0) return;
+        int iNext = i;  // Next value of i in recursive call
+        int jNext = j;  // Next value of j in recursive call
         
-        //System.out.println(i + "," + j + ":" + trans[i][j]);
-        if (trans[i][j] instanceof TransElement.CopyElement || 
-                trans[i][j] instanceof TransElement.ReplaceElement) {
-            iNext = i - 1;
-            jNext = j - 1;
-        } else if (trans[i][j] instanceof TransElement.SwapElement) {
-            iNext = i - 2;
-            jNext = j - 2;
+        // Sequence is complete when i and j both equal 0
+        if (i == 0 && j == 0) return;
+        
+        // Check the type of TransElement at the location given by (i, j)
+        // Reduce iNext and jNext respectively 
+        if (trans[i][j] instanceof TransElement.KillElement) {
+            iNext = iKill;
         } else if (trans[i][j] instanceof TransElement.DeleteElement) {
             iNext = i - 1;
-            jNext = j;
+        } else if(trans[i][j] instanceof TransElement.SwapElement) {
+            iNext = i - 2;
+            jNext = j - 2;
         } else if (trans[i][j] instanceof TransElement.InsertElement) {
-            iNext = i;
             jNext = j - 1;
         } else {
-            // KILL Element
-            iNext = iKill;
-            jNext = j;
+            // Must be either Copy or Replace - both have same effect on i, j
+            iNext = i - 1;
+            jNext = j - 1;
         }
         
         getSequence(transList, iNext, jNext);
+        
+        // Add current Element to Transformation List
         transList.add(trans[i][j]);
     }
     
