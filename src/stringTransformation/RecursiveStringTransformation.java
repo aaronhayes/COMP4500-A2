@@ -21,8 +21,7 @@ public class RecursiveStringTransformation {
      *   string x to string y 
      */
     public int stringTransformation() {
-        numberOfCalls = transformCost(x, y);
-        return numberOfCalls;
+        return transformCost(x, y);
     }
     
     /**
@@ -34,7 +33,7 @@ public class RecursiveStringTransformation {
      * @return cost of string transformation
      */
     private int transformCost(String stringX, String stringY) {
-        
+        numberOfCalls++;
         if (stringX.isEmpty()) return stringY.length() * TransCode.Insert.cost;
         if (stringY.isEmpty()) return min(TransCode.Kill.cost, 
                 x.length() * TransCode.Delete.cost);

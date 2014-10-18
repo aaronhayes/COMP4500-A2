@@ -26,8 +26,7 @@ public class DynamicStringTransformation {
     private int iKill;  // Location of Kill Transformation
     
     public int stringTransformation() {
-        numberOfIterations = transformCost();
-        return numberOfIterations;
+        return transformCost();
     }
     
     /**
@@ -47,7 +46,7 @@ public class DynamicStringTransformation {
         // Note that i = j = 1 initially: index of chars must be -1 from i,j.
         for(int i = 1; i <= x.length(); i++) {
             for(int j = 1; j <= y.length(); j++) {
-                
+                numberOfIterations++;
                 TransElement tran;
                 int minCost;
                 
